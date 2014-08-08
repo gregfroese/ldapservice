@@ -1,0 +1,8 @@
+default:
+  admin:
+    username: ldapservice@domain.com
+    password: changeme
+  url: 'ldap://domain.contrller.dns.name:389',
+  searchBase: "ou=Organization Unit;dc=domainname,dc=com",
+  searchFilter: "(sAMAccountName={{username}})",
+  secret: "YOUR_SECRET_STRING"
