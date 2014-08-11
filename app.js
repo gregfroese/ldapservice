@@ -6,12 +6,14 @@ var bodyParser = require('body-parser');
 var jwt = require('jwt-simple');
 var moment = require('moment');
 var LdapAuth = require('ldapauth');
+var cors = require('cors');
 
 app = express();
 var jwtauth = require('./jwtauth.js');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
+app.use(cors());
 
 var options = {
     url: settings.url,
@@ -25,9 +27,10 @@ var auth = new LdapAuth(options);
 app.set('jwtTokenSecret', settings.secret);
 
 app.post('/authenticate', function (req, res) {
+    console.log(req.body);
     auth.authenticate(req.body.username, req.body.password, function(err, user) {
         if(err) {
-            res.send({ error: 'Wrong user or password (could be admin or credentials)'});
+            res.status(400).send({ error: 'Wrong user or password (could be admin or credentials)'});
             return false;
         }
         if(user) {

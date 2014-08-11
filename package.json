@@ -9,6 +9,7 @@
     "moment": "~2.8.1",
     "yaml-config": "~0.3.0",
     "express": "~4.8.2",
-    "body-parser": "~1.6.2"
+    "body-parser": "~1.6.2",
+    "cors": "~2.4.1"
   }
 }
