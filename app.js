@@ -7,6 +7,7 @@ var jwt = require('jwt-simple');
 var moment = require('moment');
 var LdapAuth = require('ldapauth');
 var cors = require('cors');
+var rpc = require('./rpc.js');
 
 app = express();
 var jwtauth = require('./jwtauth.js');
@@ -27,33 +28,40 @@ var auth = new LdapAuth(options);
 app.set('jwtTokenSecret', settings.secret);
 
 app.post('/authenticate', function (req, res) {
-    console.log(req.body);
-    auth.authenticate(req.body.username, req.body.password, function(err, user) {
-        if(err) {
-            res.status(400).send({ error: 'Wrong user or password (could be admin or credentials)'});
-            return false;
-        }
-        if(user) {
-            var expires = moment().add(7, 'days').valueOf();
-            var token = jwt.encode({
-                exp: expires,
-                username: user.sAMAccountName,
-                groups: user.memberOf,
-                mail: user.mail
-            }, app.get('jwtTokenSecret'));
+    console.log(req.body.username);
+    if(req.body.username && req.body.password) {
+        auth.authenticate(req.body.username, req.body.password, function(err, user) {
+            if(err) {
+                console.log("error authenticating");
+                console.log(err);
+                res.status(401).send({ error: 'Wrong user or password (could be admin or credentials)'});
+                return false;
+            }
+            if(user) {
+                console.log("successfully authneticated");
+                var expires = moment().add(7, 'days').valueOf();
+                var token = jwt.encode({
+                    exp: expires,
+                    username: user.sAMAccountName,
+                    groups: user.memberOf,
+                    mail: user.mail
+                }, app.get('jwtTokenSecret'));
 
-            res.json({
-                token : token,
-                expires: expires,
-                user: {
-                    'username': user.sAMAccountName,
-                    'groups'  : user.memberOf
-                }
-            });
+                res.json({
+                    token : token,
+                    expires: expires,
+                    user: {
+                        'username': user.sAMAccountName,
+                        'groups'  : user.memberOf
+                    }
+                });
 
-            return user;
-        }
-    });
+                return user;
+            }
+        });
+    } else {
+        res.status(401).send({error: "No username or password supplied"});
+    }
 });
 
 app.all('/api/*', [bodyParser(), jwtauth]);
