@@ -22,23 +22,21 @@ var options = {
     searchFilter: settings.searchFilter,
     adminDn: settings.admin.username,
     adminPassword: settings.admin.password,
+    timeout: settings.timeout,
+    connectTimeout: settings.connectTimeout
 }
 var auth = new LdapAuth(options);
 
 app.set('jwtTokenSecret', settings.secret);
 
 app.post('/authenticate', function (req, res) {
-    console.log(req.body.username);
     if(req.body.username && req.body.password) {
         auth.authenticate(req.body.username, req.body.password, function(err, user) {
             if(err) {
-                console.log("error authenticating");
-                console.log(err);
                 res.status(401).send({ error: 'Wrong user or password (could be admin or credentials)'});
                 return false;
             }
             if(user) {
-                console.log("successfully authneticated");
                 var expires = moment().add(7, 'days').valueOf();
                 var token = jwt.encode({
                     exp: expires,
